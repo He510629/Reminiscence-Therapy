@@ -1,13 +1,11 @@
 import {
   demoContents,
-  demoDailyGame,
-  demoGameSessions,
-  demoGames,
   demoReports,
   demoUser,
   featuredTitles,
   getDemoChatReply,
 } from '../demo/data'
+import { demoDailyGame, demoGameSessions, demoGames } from '../demo/gameData'
 
 export interface ApiResponse<T = any> {
   code: number
