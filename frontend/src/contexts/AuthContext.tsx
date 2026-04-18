@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { demoUser } from '../demo/data'
 
 interface User {
   id: string
@@ -28,21 +29,12 @@ const AuthContext = createContext<AuthContextType>({
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(demoUser)
+  const [token, setToken] = useState<string | null>('demo-token')
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('token')
-    const savedUser = localStorage.getItem('user')
-    if (savedToken && savedUser) {
-      setToken(savedToken)
-      try {
-        setUser(JSON.parse(savedUser))
-      } catch {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-      }
-    }
+    localStorage.setItem('token', 'demo-token')
+    localStorage.setItem('user', JSON.stringify(demoUser))
   }, [])
 
   const login = (newToken: string, newUser: User) => {
@@ -53,14 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
-    setToken(null)
-    setUser(null)
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    setToken('demo-token')
+    setUser(demoUser)
+    localStorage.setItem('token', 'demo-token')
+    localStorage.setItem('user', JSON.stringify(demoUser))
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoggedIn: !!token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoggedIn: true, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

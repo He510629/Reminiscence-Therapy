@@ -1,39 +1,13 @@
-import axios from 'axios'
-
-const api = axios.create({
-  baseURL: '',
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-
-api.interceptors.response.use(
-  (response) => {
-    const data = response.data
-    if (data.code && data.code !== 200) {
-      return Promise.reject(new Error(data.message || '请求失败'))
-    }
-    return data
-  },
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
-    }
-    const msg = error.response?.data?.detail || error.message || '网络错误'
-    return Promise.reject(new Error(msg))
-  }
-)
+import {
+  demoContents,
+  demoDailyGame,
+  demoGameSessions,
+  demoGames,
+  demoReports,
+  demoUser,
+  featuredTitles,
+  getDemoChatReply,
+} from '../demo/data'
 
 export interface ApiResponse<T = any> {
   code: number
@@ -41,55 +15,112 @@ export interface ApiResponse<T = any> {
   data: T
 }
 
+function resolve<T>(data: T, message = 'success'): Promise<ApiResponse<T>> {
+  return Promise.resolve({ code: 200, message, data })
+}
+
+function clone<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data)) as T
+}
+
+function sortFeaturedFirst<T extends { title: string }>(items: T[]) {
+  const order = new Map(featuredTitles.map((title, index) => [title, index]))
+  return [...items].sort((a, b) => (order.get(a.title) ?? 999) - (order.get(b.title) ?? 999))
+}
+
+function filterContents(params?: { era?: string; region?: string; emotion_tag?: string; type?: string }) {
+  let items = [...demoContents]
+  if (params?.era) items = items.filter(item => item.era === params.era)
+  if (params?.region) items = items.filter(item => item.region === params.region)
+  if (params?.emotion_tag) items = items.filter(item => item.emotion_tag === params.emotion_tag)
+  if (params?.type) items = items.filter(item => item.type === params.type)
+  return sortFeaturedFirst(items)
+}
+
 export const authApi = {
-  login: (phone: string, password: string) =>
-    api.post<ApiResponse>('/api/v1/auth/login', { phone, password }),
-  register: (data: { phone: string; password: string; name: string; role?: string; birth_year?: number; region?: string }) =>
-    api.post<ApiResponse>('/api/v1/auth/register', data),
-  getProfile: () =>
-    api.get<ApiResponse>('/api/v1/auth/profile'),
-  updateProfile: (data: any) =>
-    api.put<ApiResponse>('/api/v1/auth/profile', data),
+  login: (_phone?: string, _password?: string) => resolve({
+    access_token: 'demo-token',
+    token_type: 'bearer',
+    user: clone(demoUser),
+    user_id: demoUser.id,
+    name: demoUser.name,
+    role: demoUser.role,
+  }),
+  register: (_data?: { phone: string; password: string; name: string; role?: string; birth_year?: number; region?: string }) => resolve({
+    access_token: 'demo-token',
+    token_type: 'bearer',
+    user: clone(demoUser),
+  }),
+  getProfile: () => resolve(clone(demoUser)),
+  updateProfile: (data: any) => resolve({ ...clone(demoUser), ...data }),
 }
 
 export const contentApi = {
-  recommend: (params?: { limit?: number; era?: string; region?: string; emotion_tag?: string }) =>
-    api.get<ApiResponse>('/api/v1/content/recommend', { params }),
-  list: (params?: { era?: string; region?: string; emotion_tag?: string; type?: string; page?: number; page_size?: number }) =>
-    api.get<ApiResponse>('/api/v1/content/list', { params }),
-  detail: (id: string) =>
-    api.get<ApiResponse>(`/api/v1/content/${id}`),
-  upload: (formData: FormData) =>
-    api.post<ApiResponse>('/api/v1/content/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+  recommend: (params?: { limit?: number; era?: string; region?: string; emotion_tag?: string }) => {
+    const items = filterContents(params).slice(0, params?.limit ?? 10)
+    return resolve(clone(items))
+  },
+  list: (params?: { era?: string; region?: string; emotion_tag?: string; type?: string; page?: number; page_size?: number }) => {
+    const allItems = filterContents(params)
+    const page = params?.page ?? 1
+    const pageSize = params?.page_size ?? 20
+    const pagedItems = allItems.slice((page - 1) * pageSize, page * pageSize)
+    return resolve({
+      total: allItems.length,
+      items: clone(pagedItems),
+    })
+  },
+  detail: (id: string) => {
+    const item = demoContents.find(content => content.id === id)
+    if (!item) {
+      return Promise.reject(new Error('内容不存在'))
+    }
+    return resolve(clone(item))
+  },
+  upload: () => Promise.reject(new Error('静态演示版暂不支持上传内容')),
 }
 
 export const gameApi = {
-  list: () =>
-    api.get<ApiResponse>('/api/v1/game/list'),
-  daily: () =>
-    api.get<ApiResponse>('/api/v1/game/daily'),
-  session: (gameCode: string, difficulty: number = 1) =>
-    api.get<ApiResponse>(`/api/v1/game/session/${gameCode}`, { params: { difficulty } }),
+  list: () => resolve(clone(demoGames)),
+  daily: () => resolve(clone(demoDailyGame)),
+  session: (gameCode: string, difficulty: number = 1) => {
+    const session = demoGameSessions[gameCode]
+    if (!session) {
+      return Promise.reject(new Error('游戏不存在'))
+    }
+    return resolve({
+      game_id: gameCode,
+      difficulty,
+      questions: clone(session.questions),
+    })
+  },
   submitResult: (data: { game_id: string; difficulty: number; score: number; accuracy: number; reaction_time_ms?: number; duration_seconds?: number; detail?: any }) =>
-    api.post<ApiResponse>('/api/v1/game/result', data),
-  history: (params?: { game_id?: string; limit?: number }) =>
-    api.get<ApiResponse>('/api/v1/game/history', { params }),
+    resolve({
+      id: `result-${Date.now()}`,
+      ...data,
+      saved: false,
+      note: '静态演示版不会保存成绩，但页面会正常展示结果。',
+    }),
+  history: () => resolve([]),
 }
 
 export const chatApi = {
-  send: (message: string, context?: string) =>
-    api.post<ApiResponse>('/api/v1/chat/send', { message, context }),
+  send: (message: string) => resolve(getDemoChatReply(message)),
 }
 
 export const reportApi = {
-  weekly: () =>
-    api.get<ApiResponse>('/api/v1/report/weekly'),
-  generateWeekly: () =>
-    api.post<ApiResponse>('/api/v1/report/weekly/generate'),
-  list: (params?: { report_type?: string; limit?: number }) =>
-    api.get<ApiResponse>('/api/v1/report/list', { params }),
+  weekly: () => resolve(clone(demoReports[0])),
+  generateWeekly: () => resolve(clone(demoReports[0]), '演示报告已刷新'),
+  list: (params?: { report_type?: string; limit?: number }) => {
+    let items = [...demoReports]
+    if (params?.report_type) items = items.filter(item => item.report_type === params.report_type)
+    if (params?.limit) items = items.slice(0, params.limit)
+    return resolve(clone(items))
+  },
+}
+
+const api = {
+  isDemo: true,
 }
 
 export default api

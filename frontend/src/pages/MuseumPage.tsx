@@ -65,7 +65,7 @@ export default function MuseumPage() {
         : await contentApi.list({ ...params, page_size: 20 })
 
       const data = res.data
-      setContents(data.items || data || [])
+      setContents(Array.isArray(data) ? data : data.items || [])
     } catch (err) {
       console.error('加载内容失败', err)
     } finally {
