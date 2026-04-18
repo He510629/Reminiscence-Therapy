@@ -31,7 +31,7 @@ const objectMatchQuestions: DemoGameQuestion[] = [
   {
     question_id: 'om1',
     type: 'match',
-    content: '请找出与“搪瓷缸”相同的图片',
+    content: '找出搪瓷缸',
     options: ['搪瓷缸', '保温杯', '玻璃瓶', '陶瓷碗'],
     option_media: {
       搪瓷缸: 'https://commons.wikimedia.org/wiki/Special:FilePath/Chinese%20porcelain%20cup%20in%20the%20period%20of%20Cultural%20Revolution.jpg',
@@ -46,7 +46,7 @@ const objectMatchQuestions: DemoGameQuestion[] = [
   {
     question_id: 'om2',
     type: 'match',
-    content: '请找出与“蜂窝煤炉”相同的图片',
+    content: '找出蜂窝煤炉',
     options: ['蜂窝煤炉', '煤气灶', '电暖器', '火盆'],
     option_media: {
       蜂窝煤炉: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Honeycomb_briquette_stove.jpg/640px-Honeycomb_briquette_stove.jpg',
@@ -61,7 +61,7 @@ const objectMatchQuestions: DemoGameQuestion[] = [
   {
     question_id: 'om3',
     type: 'match',
-    content: '请找出与“算盘”相同的图片',
+    content: '找出算盘',
     options: ['计算器', '算盘', '尺子', '圆规'],
     option_media: {
       计算器: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Calculator.JPG/640px-Calculator.JPG',
@@ -79,7 +79,7 @@ const operaQuestions: DemoGameQuestion[] = [
   {
     question_id: 'qm1',
     type: 'choice',
-    content: '请点出秦腔里最常见的主奏乐器',
+    content: '点出板胡',
     options: ['二胡', '板胡', '琵琶', '古筝'],
     option_media: {
       二胡: 'https://commons.wikimedia.org/wiki/Special:FilePath/Erhu.png',
@@ -94,7 +94,7 @@ const operaQuestions: DemoGameQuestion[] = [
   {
     question_id: 'qm2',
     type: 'choice',
-    content: '请点出更像秦腔伴奏里常见的板胡图片',
+    content: '再找一次板胡',
     options: ['二胡', '板胡', '琵琶', '古筝'],
     option_media: {
       二胡: 'https://commons.wikimedia.org/wiki/Special:FilePath/Erhu%20%288625266376%29.jpg',
@@ -112,7 +112,7 @@ const mapQuestions: DemoGameQuestion[] = [
   {
     question_id: 'mc1',
     type: 'choice',
-    content: '请点出西安城墙南门“永宁门”的照片',
+    content: '点出永宁门',
     options: ['永宁门', '钟楼', '鼓楼', '城墙角楼'],
     option_media: {
       永宁门: 'https://commons.wikimedia.org/wiki/Special:FilePath/%E6%B0%B8%E5%AE%81%E9%97%A8%20Yongning%20Gate%20%28Xi%27an%29%20%286150248350%29.jpg',
@@ -127,7 +127,7 @@ const mapQuestions: DemoGameQuestion[] = [
   {
     question_id: 'mc2',
     type: 'choice',
-    content: '请点出最像西安钟楼的照片',
+    content: '点出钟楼',
     options: ['钟楼', '永宁门', '鼓楼', '城墙'],
     option_media: {
       钟楼: 'https://commons.wikimedia.org/wiki/Special:FilePath/Bell%20Tower%20of%20Xi%27an.jpg',
